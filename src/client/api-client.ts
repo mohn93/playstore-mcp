@@ -121,6 +121,34 @@ export async function gpPut<T>(
   return handleResponse<T>(response);
 }
 
+interface Edit {
+  id: string;
+  expiryTimeSeconds: string;
+}
+
+/**
+ * Creates a temporary edit session, runs the callback, then cleans up.
+ * For write operations, pass `commit: true` to commit changes before cleanup.
+ */
+export async function withEditSession<T>(
+  packageName: string,
+  fn: (editId: string) => Promise<T>,
+  options?: { commit?: boolean }
+): Promise<T> {
+  const edit = await gpPost<Edit>(`/${packageName}/edits`, {});
+  try {
+    const result = await fn(edit.id);
+    if (options?.commit) {
+      await gpPost(`/${packageName}/edits/${edit.id}:commit`, {});
+    }
+    return result;
+  } finally {
+    if (!options?.commit) {
+      await gpDelete(`/${packageName}/edits/${edit.id}`).catch(() => {});
+    }
+  }
+}
+
 export async function gpDelete(path: string): Promise<void> {
   const token = await getAccessToken();
   const response = await fetch(`${BASE_URL}${path}`, {

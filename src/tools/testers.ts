@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { gpGet, gpPut } from "../client/api-client.js";
+import { gpGet, gpPut, withEditSession } from "../client/api-client.js";
 import type { Testers } from "../types/play-api.js";
 
 export function registerTestersTools(server: McpServer): void {
@@ -12,8 +12,8 @@ export function registerTestersTools(server: McpServer): void {
       track: z.string().describe("Track name: production, beta, alpha, or internal"),
     },
     async ({ packageName, track }) => {
-      const testers = await gpGet<Testers>(
-        `/${packageName}/edits/-/testers/${track}`
+      const testers = await withEditSession(packageName, (editId) =>
+        gpGet<Testers>(`/${packageName}/edits/${editId}/testers/${track}`)
       );
 
       return {
@@ -39,9 +39,10 @@ export function registerTestersTools(server: McpServer): void {
       googleGroups: z.array(z.string()).describe("List of Google Group email addresses"),
     },
     async ({ packageName, track, googleGroups }) => {
-      const testers = await gpPut<Testers>(
-        `/${packageName}/edits/-/testers/${track}`,
-        { googleGroups }
+      const testers = await withEditSession(
+        packageName,
+        (editId) => gpPut<Testers>(`/${packageName}/edits/${editId}/testers/${track}`, { googleGroups }),
+        { commit: true }
       );
 
       return {

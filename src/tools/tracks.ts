@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { gpGet } from "../client/api-client.js";
+import { gpGet, withEditSession } from "../client/api-client.js";
 import type { Track } from "../types/play-api.js";
 
 interface TracksListResponse {
@@ -16,8 +16,8 @@ export function registerTracksTools(server: McpServer): void {
       packageName: z.string().describe("Android package name (e.g. com.example.app)"),
     },
     async ({ packageName }) => {
-      const response = await gpGet<TracksListResponse>(
-        `/${packageName}/edits/-/tracks`
+      const response = await withEditSession(packageName, (editId) =>
+        gpGet<TracksListResponse>(`/${packageName}/edits/${editId}/tracks`)
       );
 
       return {
@@ -49,8 +49,8 @@ export function registerTracksTools(server: McpServer): void {
       track: z.string().describe("Track name: production, beta, alpha, or internal"),
     },
     async ({ packageName, track }) => {
-      const response = await gpGet<Track>(
-        `/${packageName}/edits/-/tracks/${track}`
+      const response = await withEditSession(packageName, (editId) =>
+        gpGet<Track>(`/${packageName}/edits/${editId}/tracks/${track}`)
       );
 
       return {

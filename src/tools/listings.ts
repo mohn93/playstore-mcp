@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { gpGet, gpPut } from "../client/api-client.js";
+import { gpGet, gpPut, withEditSession } from "../client/api-client.js";
 import type { Listing } from "../types/play-api.js";
 
 interface ListingsListResponse {
@@ -16,8 +16,8 @@ export function registerListingsTools(server: McpServer): void {
       packageName: z.string().describe("Android package name (e.g. com.example.app)"),
     },
     async ({ packageName }) => {
-      const response = await gpGet<ListingsListResponse>(
-        `/${packageName}/edits/-/listings`
+      const response = await withEditSession(packageName, (editId) =>
+        gpGet<ListingsListResponse>(`/${packageName}/edits/${editId}/listings`)
       );
 
       return {
@@ -46,8 +46,8 @@ export function registerListingsTools(server: McpServer): void {
       language: z.string().describe("BCP 47 language code (e.g. en-US, ja-JP)"),
     },
     async ({ packageName, language }) => {
-      const listing = await gpGet<Listing>(
-        `/${packageName}/edits/-/listings/${language}`
+      const listing = await withEditSession(packageName, (editId) =>
+        gpGet<Listing>(`/${packageName}/edits/${editId}/listings/${language}`)
       );
 
       return {
@@ -82,9 +82,10 @@ export function registerListingsTools(server: McpServer): void {
       if (shortDescription) body.shortDescription = shortDescription;
       if (fullDescription) body.fullDescription = fullDescription;
 
-      const listing = await gpPut<Listing>(
-        `/${packageName}/edits/-/listings/${language}`,
-        body
+      const listing = await withEditSession(
+        packageName,
+        (editId) => gpPut<Listing>(`/${packageName}/edits/${editId}/listings/${language}`, body),
+        { commit: true }
       );
 
       return {
