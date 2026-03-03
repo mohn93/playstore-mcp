@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MCP (Model Context Protocol) server that exposes Google's Android Publisher API v3 as tools. Built with TypeScript, runs over stdio transport.
+MCP (Model Context Protocol) server that exposes Google's Android Publisher API v3 as tools. Built with TypeScript, published to npm as `playstore-mcp`, runs over stdio transport.
 
 ## Commands
 
@@ -28,7 +28,7 @@ No test framework is configured yet.
 
 ```
 src/index.ts              — Server bootstrap, tool registration
-src/auth/google-auth.ts   — Google OAuth2 service account auth with auto-refresh
+src/auth/google-auth.ts   — Google OAuth2 service account auth (lazy singleton, auto-refresh)
 src/client/api-client.ts  — HTTP client (GET/POST/PUT/DELETE) for androidpublisher v3
 src/types/play-api.ts     — TypeScript interfaces for all Play API resources
 src/tools/*.ts            — Tool modules (one per API domain)
@@ -43,7 +43,7 @@ Provides `gpGet`, `gpPost`, `gpPut`, `gpDelete`. All requests go through `https:
 Every file in `src/tools/` follows the same structure:
 
 1. Export `registerXxxTools(server: McpServer)`
-2. Define Zod schemas for input validation
+2. Define Zod schemas for input validation inline in `server.tool()` calls
 3. Call `server.tool(name, description, zodSchema, handler)` for each tool
 4. Handler calls the API client, formats the response, returns `{ content: [{ type: "text", text: JSON.stringify(result, null, 2) }] }`
 
@@ -54,6 +54,16 @@ Tool names use `snake_case`. Errors return `{ content: [...], isError: true }`.
 1. Create `src/tools/<domain>.ts` with a `register<Domain>Tools(server: McpServer)` function
 2. Import and call it in `src/index.ts`
 
+### ESM & Import Conventions
+
+This is an ESM project (`"type": "module"` in package.json). All local imports must use `.js` extensions (e.g. `import { gpGet } from "../client/api-client.js"`), even though source files are `.ts`. This is required by Node16 module resolution.
+
 ## Tool Modules
 
 apps, tracks, reviews, listings, inapp-products, subscriptions, testers
+
+## Release & CI
+
+Uses [release-please](https://github.com/googleapis/release-please) via GitHub Actions. Pushing to `main` triggers a release PR; merging that PR publishes to npm.
+
+**Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/):** `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, etc. These drive automated versioning and changelog generation.

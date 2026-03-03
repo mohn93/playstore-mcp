@@ -15,12 +15,21 @@ You need a **Google Cloud service account** with Play Console access. Here's how
 7. Click **Add Key → Create new key → JSON** and download the file
 8. Save the JSON key file somewhere secure (e.g. `~/.google/play-service-account.json`)
 
+### Enable the Google Play Developer API
+
+9. Go to [Google Cloud Console → Google Play Android Developer API](https://console.cloud.google.com/apis/library/androidpublisher.googleapis.com)
+10. Make sure your project is selected, then click **Enable**
+
 ### Grant Play Console Access
 
-9. Go to [Google Play Console → Settings → API access](https://play.google.com/console/developers/api-access)
-10. Find your service account and click **Manage Play Console permissions**
-11. Grant the necessary permissions (e.g. **View app information**, **Manage production releases**, **Reply to reviews**)
-12. Click **Invite user** and then **Save**
+11. Go to [Google Play Console](https://play.google.com/console) → **Users and permissions**
+12. Click **Invite new users**
+13. Enter the service account's `client_email` (found in the JSON key file, e.g. `my-service-account@my-project.iam.gserviceaccount.com`)
+14. Under **App permissions**, add the apps you want the service account to access
+15. Grant the necessary permissions (e.g. **View app information and download bulk reports**, **Manage production releases**, **Reply to reviews**)
+16. Click **Invite user**
+
+> **Important:** You need **account owner** or **admin** permissions in the Play Console to invite new users. If you don't have either role, ask someone who does to complete this step.
 
 | Credential | Where to find it |
 |---|---|
