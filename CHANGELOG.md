@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/mohn93/playstore-mcp/compare/playstore-mcp-1.1.0...playstore-mcp-1.1.1) (2026-03-03)
+
+
+### Bug Fixes
+
+* use real edit sessions for all edit-based API endpoints ([599bc93](https://github.com/mohn93/playstore-mcp/commit/599bc933d3efdcf0a5f38b5aeb73350e7e264d18))
+
 ## [1.1.0](https://github.com/mohn93/playstore-mcp/compare/playstore-mcp-1.0.0...playstore-mcp-1.1.0) (2026-03-03)
 
 
